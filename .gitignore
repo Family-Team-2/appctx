@@ -18,3 +18,5 @@
 !.github
 !.github/workflows
 !.github/workflows/*.yml
+
+!example/config.yml
