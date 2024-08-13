@@ -7,21 +7,13 @@
 !*.go
 !go.mod
 !go.sum
-!*.templ
-!tsconfig.json
 
 !*/
 !*/*.go
 !*/go.mod
 !*/go.sum
-!*/*.templ
 
 !*.md
-
-!resources/
-!resources/*
-!resources/*/*
-!resources/*/*/*
 
 !.github
 !.github/workflows
