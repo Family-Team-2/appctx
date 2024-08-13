@@ -68,7 +68,11 @@ func (app *AppCtx[_, _]) initFlags() error {
 			app.getFlagHelp())
 	}
 
-	fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		return fmt.Errorf("parsing flags: %w", err)
+	}
+
 	return nil
 }
 
