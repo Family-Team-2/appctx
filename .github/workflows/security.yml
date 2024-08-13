@@ -1,0 +1,42 @@
+name: Security
+
+on:
+  workflow_call:
+  push:
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+    paths-ignore:
+      - "**.md"
+  schedule:
+    - cron: "41 3 * * 2"
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    name: Check package for vulnerabilities
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          check-latest: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-package: ./...

@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  workflow_call:
+  push:
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+    paths-ignore:
+      - "**.md"
+  schedule:
+    - cron: "39 1 * * 3"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build package
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        go_major_version: [stable]
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "${{ matrix.go_major_version }}"
+          check-latest: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Tidy modules file
+        run: go mod tidy && git diff --exit-code
+
+      - name: Download go modules
+        run: go mod download
+
+      - name: Verify go modules
+        run: go mod verify
+
+      - name: Build package
+        run: go build -v ./...
+
+      - name: Run tests
+        run: go test -cover -short -shuffle=on -timeout=2m -v ./...
+
+      - name: Run tests with race detector
+        run: go test -cover -race -short -shuffle=on -timeout=2m -v ./...
