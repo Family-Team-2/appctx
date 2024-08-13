@@ -27,6 +27,8 @@ type AppCtx[T any, U any] struct {
 	title             string
 	version           string
 	hasLogger         bool
+	hasError          bool
+	noConfig          bool
 	cancel            func()
 	flags             []appFlag
 	registeredPlugins []AppPlugin[T, U]
@@ -63,6 +65,7 @@ func (app *AppCtx[T, U]) Run(callback func(ctx *AppCtx[T, U]) error) {
 
 	err := app.run(callback)
 	if err != nil {
+		app.hasError = true
 		if app.hasLogger {
 			app.logger.Err(err).Msg("shutting down")
 		} else {
@@ -79,6 +82,14 @@ func (app *AppCtx[_, _]) Stop() {
 	if app.cancel != nil {
 		app.cancel()
 	}
+}
+
+func (app *AppCtx[T, U]) Exit() {
+	os.Exit(map[bool]int{false: 0, true: 1}[app.hasError])
+}
+
+func (app *AppCtx[T, U]) DisableConfig() {
+	app.noConfig = true
 }
 
 func (app *AppCtx[T, U]) run(callback func(ctx *AppCtx[T, U]) error) error {

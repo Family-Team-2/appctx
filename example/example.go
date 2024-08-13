@@ -17,8 +17,9 @@ func main() {
 	type App = appctx.AppCtx[appConfig, appPlugins]
 
 	app := appctx.NewApp[appConfig, appPlugins]("Example App", "1.0.0")
-	app.RegisterPlugin(&app.Plugins().PluginExample)
+	defer app.Exit()
 
+	app.RegisterPlugin(&app.Plugins().PluginExample)
 	app.Run(func(app *App) error {
 		app.Log().Str("config_message", app.Config().Message).Msg("running app callback")
 		app.Log().Str("string", app.Plugins().PluginTestFunction()).Msg("calling plugin function")

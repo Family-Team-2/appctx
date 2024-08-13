@@ -3,6 +3,7 @@ package appctx
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -31,6 +32,8 @@ func (app *AppCtx[_, _]) newFlag(names []string, value any, def any, description
 }
 
 func (app *AppCtx[_, _]) initFlags() error {
+	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+
 	for _, f := range app.flags {
 		for _, name := range f.names {
 			switch v := f.value.(type) {
@@ -40,32 +43,32 @@ func (app *AppCtx[_, _]) initFlags() error {
 					return fmt.Errorf("invalid default value type of flag %v: %T (should be %T)", name, f.def, v)
 				}
 
-				flag.StringVar(v, name, def, "")
+				fs.StringVar(v, name, def, "")
 			case *int:
 				def, ok := f.def.(int)
 				if !ok {
 					return fmt.Errorf("invalid default value type of flag %v: %T (should be %T)", name, f.def, v)
 				}
 
-				flag.IntVar(v, name, def, "")
+				fs.IntVar(v, name, def, "")
 			case *bool:
 				def, ok := f.def.(bool)
 				if !ok {
 					return fmt.Errorf("invalid default value type of flag %v: %T (should be %T)", name, f.def, v)
 				}
 
-				flag.BoolVar(v, name, def, "")
+				fs.BoolVar(v, name, def, "")
 			}
 		}
 	}
 
-	flag.Usage = func() {
+	fs.Usage = func() {
 		fmt.Println(app.title + " v" + app.version + "\n" +
 			"Usage:\n" +
 			app.getFlagHelp())
 	}
 
-	flag.Parse()
+	fs.Parse(os.Args[1:])
 	return nil
 }
 

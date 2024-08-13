@@ -8,6 +8,10 @@ import (
 )
 
 func (app *AppCtx[_, _]) loadConfig() error {
+	if app.noConfig {
+		return nil
+	}
+
 	f, err := os.Open(app.cfg.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("opening config file \"%v\": %w", app.cfg.ConfigFile, err)
