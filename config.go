@@ -7,14 +7,14 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-func (app *AppCtx[_, _]) loadConfig() error {
+func (app *AppCtx[_, _]) loadConfig(configName string) error {
 	if app.noConfig {
 		return nil
 	}
 
-	f, err := os.Open(app.cfg.ConfigFile)
+	f, err := os.Open(configName)
 	if err != nil {
-		return fmt.Errorf("opening config file \"%v\": %w", app.cfg.ConfigFile, err)
+		return fmt.Errorf("opening config file \"%v\": %w", configName, err)
 	}
 	defer f.Close()
 

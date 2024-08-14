@@ -32,6 +32,10 @@ func (app *AppCtx[_, _]) newFlag(names []string, value any, def any, description
 }
 
 func (app *AppCtx[_, _]) initFlags() error {
+	if app.noFlags {
+		return nil
+	}
+
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	for _, f := range app.flags {

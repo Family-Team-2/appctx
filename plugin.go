@@ -19,6 +19,11 @@ func (app *AppCtx[T, U]) WithPlugin(plugin AppPlugin[T, U]) *AppCtx[T, U] {
 	return app
 }
 
+type appPluginInstantiator[T any, U any] interface {
+	AppPlugin[T, U]
+	PluginInstantiate(ac *AppCtx[T, U]) error
+}
+
 type appPluginStarter[T any, U any] interface {
 	AppPlugin[T, U]
 	PluginStart(ac *AppCtx[T, U]) error
@@ -44,6 +49,27 @@ func (app *AppCtx[T, U]) startPlugins() error {
 		err := plugin.PluginStart(app)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("starting plugin \"%v\": %w", name, err))
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (app *AppCtx[T, U]) instantiatePlugins() error {
+	errs := []error{}
+
+	for _, rawPlugin := range app.registeredPlugins {
+		plugin, ok := rawPlugin.(appPluginInstantiator[T, U])
+		if !ok {
+			continue
+		}
+
+		name := plugin.PluginName()
+		app.Debug().Str("name", name).Msg("instantiating plugin")
+
+		err := plugin.PluginInstantiate(app)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("instantiating plugin \"%v\": %w", name, err))
 		}
 	}
 
