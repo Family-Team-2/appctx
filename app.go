@@ -42,6 +42,14 @@ func NewApp[T any, U any](title, version string) *AppCtx[T, U] {
 	}
 }
 
+func NewAppWithContext[T any, U any](ctx context.Context, title, version string) *AppCtx[T, U] {
+	return &AppCtx[T, U]{
+		Context: ctx,
+		title:   title,
+		version: version,
+	}
+}
+
 func (app *AppCtx[T, U]) MarshalZerologObject(e *zerolog.Event) {
 	e = e.Str("title", app.title).Str("version", app.version)
 
@@ -71,7 +79,12 @@ func (app *AppCtx[T, U]) P() *U {
 }
 
 func (app *AppCtx[T, U]) Run(callback func(ctx *AppCtx[T, U]) error) {
-	app.Context, app.cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	if app.Context == nil {
+		app.Context, app.cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	} else {
+		app.Context, app.cancel = context.WithCancel(app.Context)
+	}
+
 	defer app.cancel()
 
 	defer app.stopPlugins()
