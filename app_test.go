@@ -27,6 +27,8 @@ func TestSimpleApp(t *testing.T) {
 
 	assert.EqualValues(t, "Test App", app.title)
 	assert.EqualValues(t, "1.0.0", app.version)
+	assert.EqualValues(t, "Test App", app.Title())
+	assert.EqualValues(t, "1.0.0", app.Version())
 	require.True(t, f)
 }
 

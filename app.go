@@ -78,6 +78,14 @@ func (app *AppCtx[T, U]) P() *U {
 	return app.Plugins()
 }
 
+func (app *AppCtx[T, U]) Title() string {
+	return app.title
+}
+
+func (app *AppCtx[T, U]) Version() string {
+	return app.version
+}
+
 func (app *AppCtx[T, U]) Run(callback func(ctx *AppCtx[T, U]) error) {
 	if app.Context == nil {
 		app.Context, app.cancel = signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
