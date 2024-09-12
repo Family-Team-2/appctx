@@ -3,13 +3,9 @@ module github.com/Family-Team-2/appctx/example
 go 1.22
 
 require (
-	github.com/Family-Team-2/appctx v1.0.0
-	github.com/Family-Team-2/appctx/plugins/example v1.0.0
+	github.com/Family-Team-2/appctx v1.2.0
+	github.com/Family-Team-2/appctx/plugins/example v0.0.0-20240905130855-f15a53a30378
 )
-
-replace github.com/Family-Team-2/appctx => ../
-
-replace github.com/Family-Team-2/appctx/plugins/example => ../plugins/example
 
 require (
 	github.com/fatih/color v1.17.0 // indirect
