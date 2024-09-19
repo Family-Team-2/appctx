@@ -40,6 +40,9 @@ type HTTPRouter[T any, U any] interface {
 	Patch(pattern string, handler func(app *appctx.AppCtx[T, U], w http.ResponseWriter, r *http.Request) error)
 	Delete(pattern string, handler func(app *appctx.AppCtx[T, U], w http.ResponseWriter, r *http.Request) error)
 	ServeFS(pattern string, fs fs.FS)
+
+	Use(middlewares ...func(app *appctx.AppCtx[T, U], next http.Handler) http.Handler)
+	Group(callback func(sr HTTPRouter[T, U]))
 }
 
 type httpRouter[T any, U any] struct {
@@ -76,6 +79,28 @@ func (rt *httpRouter[T, U]) ServeFS(pattern string, fs fs.FS) {
 	rt.Get(pattern, func(_ *appctx.AppCtx[T, U], w http.ResponseWriter, r *http.Request) error {
 		http.FileServer(http.FS(fs)).ServeHTTP(w, r)
 		return nil
+	})
+}
+
+func (rt *httpRouter[T, U]) Use(middlewares ...func(app *appctx.AppCtx[T, U], next http.Handler) http.Handler) {
+	for _, middleware := range middlewares {
+		rt.r.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				h := middleware(rt.pl.app, next)
+				if h != nil {
+					h.ServeHTTP(w, r)
+				}
+			})
+		})
+	}
+}
+
+func (rt *httpRouter[T, U]) Group(callback func(sr HTTPRouter[T, U])) {
+	rt.r.Group(func(r chi.Router) {
+		callback(&httpRouter[T, U]{
+			r:  r,
+			pl: rt.pl,
+		})
 	})
 }
 
